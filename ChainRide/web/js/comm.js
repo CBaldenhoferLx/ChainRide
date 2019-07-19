@@ -1,5 +1,5 @@
 
-var baseUrl = "http://localhost:8080/ChainRide/ws/";
+var baseUrl = window.location.protocol + "//" + window.location.host + "/ChainRide/ws/";
 
 var userId = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3).toUpperCase();
 var isLeader = false;
