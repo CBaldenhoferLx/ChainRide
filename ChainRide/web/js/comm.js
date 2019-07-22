@@ -1,21 +1,39 @@
 
 var baseUrl = window.location.protocol + "//" + window.location.host + "/ChainRide/ws/";
 
-var userId = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3).toUpperCase();
-var isLeader = false;
-var isFollower = false;
+function initComm() {
+    $(document).on("locationChanged", function() {
+        console.log("Location changed");
 
-$(document).on("locationChanged", function() {
-    console.log("Location changed");
+        if (user.isLeader) {
+            leader.sendLocation();
+        }
+
+        if (user.isFollower) {
+            follower.followLeader();
+        }
+    });
     
-    if (isLeader) {
-        leader.sendLocation();
-    }
+    user.init();
+}
+
+var user = {
+    id: null,
+    isLeader: false,
+    isFollower: false,
     
-    if (isFollower) {
-        follower.followLeader();
+    init: function() {
+        this.id = document.cookie;
+        if (!this.id || this.id.length<3) {
+            this.setId(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3).toUpperCase());
+        }
+    },
+    
+    setId: function(id) {
+        this.id = id;
+        document.cookie = id;
     }
-});
+};
 
 var leaders = {
 
@@ -77,7 +95,7 @@ var leader = {
     registerLeader: function() {
         console.log("registerLeader");
         
-        $.get(baseUrl + 'sessions/registerLeader?id=' + userId, function(data) {
+        $.get(baseUrl + 'sessions/registerLeader?id=' + user.id, function(data) {
         });
     },
     
@@ -100,7 +118,7 @@ var leader = {
         
         this.sendLocationLastTs = Date.now();
         
-        $.get(baseUrl + 'loc/' + userId + '/update?lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
+        $.get(baseUrl + 'loc/' + user.id + '/update?lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
         });
     }
 
