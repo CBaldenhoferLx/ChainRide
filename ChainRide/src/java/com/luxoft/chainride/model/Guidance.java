@@ -5,9 +5,6 @@
  */
 package com.luxoft.chainride.model;
 
-import com.javadocmd.simplelatlng.LatLng;
-import com.javadocmd.simplelatlng.LatLngTool;
-import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.luxoft.chainride.HereMapsConnector;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,39 +19,34 @@ public class Guidance {
         maneuvers = new ArrayList<>();
     }
     
-    public static Guidance generateGuidance(Coordinates follower, Coordinates leader) {
-        Guidance g = new Guidance();
-        
-        g.setLd((int) LatLngTool.distance(new LatLng(follower.getLat(), follower.getLng()), new LatLng(leader.getLat(), leader.getLng()), LengthUnit.METER));
+    public static void addGuidance(Guidance g, Coordinates follower, Coordinates leader) {
         HereMapsConnector.calculateSteps(follower, leader, g);
-        
-        return g;
-    }    
+    }
+    
+        private Leader leader;
+
+    /**
+     * Get the value of leader
+     *
+     * @return the value of leader
+     */
+    public Leader getLeader() {
+        return leader;
+    }
+
+    /**
+     * Set the value of leader
+     *
+     * @param leader new value of leader
+     */
+    public void setLeader(Leader leader) {
+        this.leader = leader;
+    }
+
     
     public void addManeuver(Maneuver m) {
         maneuvers.add(m);
     }
-    
-        private int ld;
-
-    /**
-     * Get the value of ld
-     *
-     * @return the value of ld
-     */
-    public int getLd() {
-        return ld;
-    }
-
-    /**
-     * Set the value of ld
-     *
-     * @param ld new value of ld
-     */
-    public void setLd(int ld) {
-        this.ld = ld;
-    }
-
     
     private List<Maneuver> maneuvers;
 

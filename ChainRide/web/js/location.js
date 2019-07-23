@@ -4,17 +4,15 @@ var currentCoords;
 var oldCoords = null;
 var updateDistance = 0.01;
 
-navigator.geolocation.watchPosition(locationSuccess, locationFail, {enableHighAccuracy:true, timeout: 2000});
-
-function checkNewCoords() {
-    
+function initLocation() {
+    navigator.geolocation.watchPosition(locationSuccess, locationFail, {enableHighAccuracy:true, timeout: 2000});
 }
 
 function locationSuccess(pos) {
     // Location found, show map with these coordinates
     currentLocation = pos;
     currentCoords = { lat: currentLocation.coords.latitude, lng: currentLocation.coords.longitude};
-    var locStr = currentLocation.coords.latitude + ", " + currentLocation.coords.longitude + " (Acc: " + currentLocation.coords.accuracy + ")";
+    var locStr = currentLocation.coords.latitude + ", " + currentLocation.coords.longitude + " (Acc: " + currentLocation.coords.accuracy.toFixed(2) + " m)";
     $("#currentLocation").html(locStr);
     $("#currentLocationGL").html(locStr);
     $("#currentLocationFO").html(locStr);
@@ -52,5 +50,5 @@ function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
 }
 
 function deg2rad(deg) {
-    return deg * (Math.PI/180)
+    return deg * (Math.PI/180);
 }

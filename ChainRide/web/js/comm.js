@@ -1,34 +1,76 @@
+/* global currentCoords */
 
+var isDebug = getURLParam("isDebug");
 var baseUrl = window.location.protocol + "//" + window.location.host + "/ChainRide/ws/";
 
-var userId = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3).toUpperCase();
-var isLeader = false;
-var isFollower = false;
+function initComm() {
+    $(document).on("locationChanged", function() {
+        console.log("Location changed");
+    });
+    
+    user.init();
+}
 
-$(document).on("locationChanged", function() {
-    console.log("Location changed");
-    
-    if (isLeader) {
-        leader.sendLocation();
+function getURLParam(name){
+    var results = new RegExp('[\?&]' + name + '=([^]*)').exec(window.location.href);
+    if (results==null){
+       return null;
     }
-    
-    if (isFollower) {
-        follower.followLeader();
+    else{
+       return results[1] || 0;
     }
-});
+}
+
+function configureLeader() {
+    configureSession(true, null);
+}
+
+function configureFollower(newLeader) {
+    configureSession(false, newLeader);
+}
+
+function configureSession(isLeader, leaderId) {
+    user.isLeader = isLeader;
+    user.isFollower = !isLeader;
+    follower.leaderToFollow = leaderId;
+    
+    leader.setUpdateEnabled(isLeader);
+    if (isLeader) leader.update();
+
+    follower.setFollowEnabled(!isLeader);
+    if (!isLeader) follower.followLeader();
+}
+
+var user = {
+    id: null,
+    isLeader: false,
+    isFollower: false,
+    
+    init: function() {
+        if (!isDebug) this.id = document.cookie;
+        if (!this.id || this.id.length<3) {
+            this.setId(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3).toUpperCase());
+        }
+    },
+    
+    setId: function(id) {
+        this.id = id;
+        if (!isDebug) document.cookie = id;
+    }
+};
 
 var leaders = {
 
     pollingEnabled: false,
     pollingHandle: null,
     pollingIntervalMs: 3000,
-    listElementName: null,
+    listElementName: "#leaderList",
 
     setPollingEnabled: function(enable) {
         this.pollingEnabled = enable;
 
         if (this.pollingEnabled) {
-            this.pollingHandle = setInterval(function() { leaders.updateLeaders() }, this.pollingIntervalMs);
+            this.pollingHandle = setInterval(function() { leaders.updateLeaders(); }, this.pollingIntervalMs);
         } else {
             clearInterval(this.pollingHandle);
         }
@@ -47,60 +89,42 @@ var leaders = {
                 $(leaders.listElementName).append(listItem);
             });
         });
-    },
-    
-    setElement: function(e) {
-        this.listElementName = e;
     }
+    
 };
 
 var leader = {
-    registerEnabled: false,
-    registerHandle: null,
-    registerIntervalMs: 8000,
+    updateEnabled: false,
+    updateHandle: null,
+    updateIntervalMs: 5000,
+    followersListElementName: "#followerList",
     
-    sendLocationEnabled: false,
-    sendLocationHandle: null,
-    //sendLocationIntervalMs: 5000,
-    sendLocationLastTs: 0,
-    
-    setRegisterEnabled: function(enable) {
-        this.registerEnabled = enable;
+    setUpdateEnabled: function(enable) {
+        this.updateEnabled = enable;
         
-        if (this.registerEnabled) {
-            this.registerHandle = setInterval(this.registerLeader, this.registerIntervalMs);
+        if (this.updateEnabled) {
+            this.updateHandle = setInterval(this.update, this.updateIntervalMs);
         } else {
-            clearInterval(this.registerHandle);
+            clearInterval(this.updateHandle);
         }
     },
     
-    registerLeader: function() {
-        console.log("registerLeader");
+    update: function() {
+        if (!currentCoords) return;
         
-        $.get(baseUrl + 'sessions/registerLeader?id=' + userId, function(data) {
-        });
-    },
-    
-    setSendLocationEnabled: function(enable) {
-        this.sendLocationEnabled = enable;
-        
-        /*
-        if (this.sendLocationEnabled) {
-            this.sendLocationHandle = setInterval(this.sendLocation, this.sendLocationIntervalMs);
-        } else {
-            clearInterval(this.sendLocationHandle);
-        }*/
-    },
-    
-    sendLocation: function(forceSend) {
-        if (!forceSend) {
-            if (!this.sendLocationEnabled) return;
-            if (Date.now() - this.sendLocationLastTs < 3000) return;
-        }
-        
-        this.sendLocationLastTs = Date.now();
-        
-        $.get(baseUrl + 'loc/' + userId + '/update?lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
+        $.get(baseUrl + 'sessions/' + user.id + '/leader?lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
+            
+            console.log(data);
+            
+            $(leader.followersListElementName).empty();
+
+            data.forEach(function(e) {
+                var distance = getDistanceFromLatLonInKmPos(currentCoords, e.loc);
+                
+                var listItem = "<li>Follower&nbsp;" + e.id + ", Distance: " + distance + " m</li>";
+                $(leader.followersListElementName).append(listItem);
+            });
+            
         });
     }
 
@@ -111,34 +135,30 @@ var follower = {
     leaderToFollow: "",
     followEnabled: false,
     followHandle: null,
-    followLastTs: 0,
-    //followIntervalMs: leader.sendLocationIntervalMs,        // use the same
-    leaderDistanceElementName: null,
-    tbtElementName: null,
+    followIntervalMs: leader.updateIntervalMs,        // use the same
+    leaderDistanceElementName: "#distanceToLeader",
+    tbtElementName: "#tbtList",
     
     setFollowEnabled: function(enable) {
         this.followEnabled = enable;
         
-        /*
         if (this.followEnabled) {
             this.followHandle = setInterval(this.followLeader, this.followIntervalMs);
         } else {
             clearInterval(this.followHandle);
-        }*/
+        }
     },
     
-    followLeader: function(forceSend) {
-        if (!forceSend) {
-            if (!this.followEnabled) return;
-            if (Date.now() - this.followLastTs < 3000) return;
-        }
+    followLeader: function() {
+        if (!currentCoords) return;
         
-        this.followLastTs = Date.now();
-        
-        $.get(baseUrl + 'loc/guidance?lid=' + follower.leaderToFollow + '&lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
+        $.get(baseUrl + 'sessions/' + user.id + '/follow?lid=' + follower.leaderToFollow + '&lat=' + currentCoords.lat + '&lng=' + currentCoords.lng, function(data) {
             console.log(data);
             
-            $(follower.leaderDistanceElementName).html(data.ld + " m");
+            if (data.leader) {
+                var dist = (getDistanceFromLatLonInKmPos(leader.loc, currentCoords) / 1000).toFixed(0);
+                $(follower.leaderDistanceElementName).html(dist + " m");
+            }
             
             $(follower.tbtElementName).empty();
 

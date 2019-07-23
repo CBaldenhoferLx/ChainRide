@@ -5,19 +5,22 @@
  */
 package com.luxoft.chainride;
 
+import com.luxoft.chainride.model.Coordinates;
+import com.luxoft.chainride.model.Follower;
+import com.luxoft.chainride.model.Guidance;
 import com.luxoft.chainride.model.Leader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * REST Web Service
@@ -27,10 +30,8 @@ import javax.ws.rs.core.MediaType;
 @Path("sessions")
 public class SessionsResource {
     
-    //private final static int MAX_LIFETIME_MS = 60 * 1000;
-    private final static int MAX_LIFETIME_MS = 20 * 1000;
-    private final static Map<String, Leader> leaders = new HashMap<>();
-
+    public static final int GUIDANCE_THRESHOLD_M = 500;
+    
     @Context
     private UriInfo context;
 
@@ -39,42 +40,97 @@ public class SessionsResource {
      */
     public SessionsResource() {
     }
-    
-    private synchronized void maintainLeaders(final String newLeaderToAdd) {
-        Iterator<String> it = leaders.keySet().iterator();
-        
-        while(it.hasNext()) {
-            String name = it.next();
-            if (System.currentTimeMillis() - leaders.get(name).getLastPing() > MAX_LIFETIME_MS) {
-                it.remove();
-            }
-        }
-        
-        if (newLeaderToAdd!=null) {
-            leaders.put(newLeaderToAdd, new Leader(newLeaderToAdd, System.currentTimeMillis()));
-        }
-    }
 
     @GET
-    @Path("registerLeader")
-    public void registerLeader(@QueryParam("id") String id) {
-        if (!leaders.containsKey(id)) {
-            System.out.println("Adding leader " + id);
-        } else {
-            System.out.println("Leader already exists");
-        }
-        
-        maintainLeaders(id);
+    @Path("{id}/leader")
+    public List<Follower> updateLeader(
+            @PathParam("id") String id,
+            @QueryParam("lat") double lat,
+            @QueryParam("lng") double lng
+            ) {
+        try {
+            SessionManager.maintainTables();
 
-        System.out.println(leaders.toString());
+            SessionManager.updateLeader(id, lat, lng);
+            
+            return SessionManager.listFollowers(id);
+        } catch (SQLException ex) {
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+        }
     }
     
     @GET
     @Path("leaders")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Leader> listLeaders() {
+        
+        /*
         maintainLeaders(null);
 
         return new ArrayList<>(leaders.values());
+        */
+
+        try {
+            SessionManager.maintainTables();
+
+            return SessionManager.listLeaders();
+        } catch (SQLException ex) {
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GET
+    @Path("{id}/follower")
+    public Leader updateFollower(
+            @PathParam("id") String id, 
+            @QueryParam("lid") String leaderId, 
+            @QueryParam("lat") double lat, 
+            @QueryParam("lng") double lng) {
+        
+        try {
+            SessionManager.maintainTables();
+            
+            SessionManager.updateFollower(id, leaderId, lat, lng);
+            
+            return SessionManager.getLeader(leaderId);
+        } catch (SQLException ex) {
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GET
+    @Path("{id}/follow")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Guidance calculateGuidance(
+            @PathParam("id") String id,
+            @QueryParam("lid") String leaderId,
+            @QueryParam("lat") double lat, 
+            @QueryParam("lng") double lng,
+            @QueryParam("moved") boolean moved            
+    ) {
+        
+        try {
+            SessionManager.maintainTables();
+
+            SessionManager.updateFollower(id, leaderId, lat, lng);
+
+            Guidance g = new Guidance();
+
+            Leader leader = SessionManager.getLeader(leaderId);
+            g.setLeader(leader);
+            
+            if (leader!=null) {
+                Coordinates myCoord = new Coordinates(lat, lng);
+                if (myCoord.distanceToInM(leader.getLoc()) > GUIDANCE_THRESHOLD_M && moved) {
+                    Guidance.addGuidance(g, myCoord, leader.getLoc());
+                }
+                return g;
+            } else {
+                System.out.println("Leader not found: " + leaderId);
+                throw new WebApplicationException("LeaderId not found", Response.Status.BAD_REQUEST);
+            }
+        } catch (SQLException ex) {
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+        }
     }
 }

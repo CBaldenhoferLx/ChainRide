@@ -5,6 +5,7 @@
  */
 package com.luxoft.chainride;
 
+import java.sql.SQLException;
 import java.util.Set;
 import javax.ws.rs.core.Application;
 
@@ -15,6 +16,10 @@ import javax.ws.rs.core.Application;
 @javax.ws.rs.ApplicationPath("ws")
 public class ApplicationConfig extends Application {
 
+    public ApplicationConfig() throws SQLException, ClassNotFoundException {
+        SessionManager.init();
+    }
+    
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
@@ -29,6 +34,7 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
+        //resources.add(com.luxoft.chainride.LocationResource.class);
         resources.add(com.luxoft.chainride.LocationResource.class);
         resources.add(com.luxoft.chainride.SessionsResource.class);
     }

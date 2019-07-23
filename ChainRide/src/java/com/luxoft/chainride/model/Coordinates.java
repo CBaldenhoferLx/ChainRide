@@ -5,6 +5,9 @@
  */
 package com.luxoft.chainride.model;
 
+import com.javadocmd.simplelatlng.LatLng;
+import com.javadocmd.simplelatlng.LatLngTool;
+import com.javadocmd.simplelatlng.util.LengthUnit;
 import java.io.Serializable;
 
 /**
@@ -19,6 +22,18 @@ public class Coordinates implements Serializable {
     public Coordinates(double lat, double lng) {
         this.lat = lat;
         this.lng = lng;
+    }
+    
+    public static Coordinates getCoordinates(double lat, double lng) {
+        return new Coordinates(lat, lng);
+    }
+    
+    public LatLng toLatLng() {
+        return new LatLng(lat, lng);
+    }
+    
+    public double distanceToInM(Coordinates coord) {
+        return LatLngTool.distance(toLatLng(), coord.toLatLng(), LengthUnit.METER);
     }
     
     public String toHereFormat() {

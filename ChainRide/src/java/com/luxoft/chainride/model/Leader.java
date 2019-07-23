@@ -16,10 +16,33 @@ public class Leader implements Serializable {
     public Leader() {
     }
     
-    public Leader(String name, long lastPing) {
+    public Leader(Coordinates loc, String name, long lastPing) {
+        this.loc = loc;
         this.name = name;
         this.lastPing = lastPing;
     }
+    
+    
+        private Coordinates loc;
+
+    /**
+     * Get the value of loc
+     *
+     * @return the value of loc
+     */
+    public Coordinates getLoc() {
+        return loc;
+    }
+
+    /**
+     * Set the value of loc
+     *
+     * @param loc new value of loc
+     */
+    public void setLoc(Coordinates loc) {
+        this.loc = loc;
+    }
+
     
         private String name;
 
