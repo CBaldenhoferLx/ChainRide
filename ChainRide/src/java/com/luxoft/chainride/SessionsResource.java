@@ -40,7 +40,7 @@ public class SessionsResource {
     public SessionsResource() {
     }
     
-    private synchronized void maintainLeaders(String newLeaderToAdd) {
+    private synchronized void maintainLeaders(final String newLeaderToAdd) {
         Iterator<String> it = leaders.keySet().iterator();
         
         while(it.hasNext()) {
