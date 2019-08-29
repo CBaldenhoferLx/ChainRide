@@ -54,6 +54,7 @@
             
             $( "#selectLeader" ).bind({
                 popupafteropen: function(event, ui) { 
+                    $("#leaderList").empty();
                     leaders.setPollingEnabled(true);
                 },
                 popupafterclose: function(event, ui) { 
@@ -68,6 +69,7 @@
         
         function selectLeader(newLeader) {
             configureFollower(newLeader);
+            $("#tbtList").empty();
             $("#selectLeader").popup("close");
 	}
         
@@ -127,7 +129,8 @@
 
 <div data-role="page" id="spawnAsLeader">
 	<div data-role="header" data-theme="a">
-		<h1>Group Leader&nbsp;</h1><div id="userIdGL"></div>
+		<h1>Group Leader&nbsp;</h1>
+                <center><div id="userIdGL"></div></center>
 	</div>
 	
 	<ul data-role="listview" id="followerList">
@@ -144,7 +147,8 @@
 
 <div data-role="page" id="spawnAsFollower">
 	<div data-role="header" data-theme="a">
-            <h1>Follower&nbsp;</h1><div id="userIdFO"></div>
+            <h1>Follower&nbsp;</h1>
+            <center><div id="userIdFO"></div></center>
 	</div>
 
 	<!--
@@ -162,10 +166,12 @@
 	    </div>
 	</div>
 
-	<p><b>Distance to leader:</b></p>
-	<div id="distanceToLeader">Searching leader...</div>
+        <div style="display: inline">Distance to leader:</div>
+        <div style="display: inline" id="distanceToLeader">Searching leader...</div>
 
-	<ul data-role="listview" id="tbtList">
+        <div id="nextInstr"></div>
+
+        <ul data-role="listview" id="tbtList">
 	</ul>
 
 	<p><a href="#startPage" data-direction="reverse" class="ui-btn ui-shadow ui-corner-all ui-btn-b">Back to start</a></p>

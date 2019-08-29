@@ -21,7 +21,11 @@ public class Leader implements Serializable {
         this.name = name;
         this.lastPing = lastPing;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Leader{" + "loc=" + loc + ", name=" + name + ", lastPing=" + lastPing + '}';
+    }
     
         private Coordinates loc;
 

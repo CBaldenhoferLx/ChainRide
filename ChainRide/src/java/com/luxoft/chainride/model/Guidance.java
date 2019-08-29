@@ -22,8 +22,34 @@ public class Guidance {
     public static void addGuidance(Guidance g, Coordinates follower, Coordinates leader) {
         HereMapsConnector.calculateSteps(follower, leader, g);
     }
+
+    @Override
+    public String toString() {
+        return "Guidance{" + "leader=" + leader + ", maneuvers=" + maneuvers + '}';
+    }
     
-        private Leader leader;
+    private String nextInstr = "";
+
+    /**
+     * Get the value of nextInstr
+     *
+     * @return the value of nextInstr
+     */
+    public String getNextInstr() {
+        return nextInstr;
+    }
+
+    /**
+     * Set the value of nextInstr
+     *
+     * @param nextInstr new value of nextInstr
+     */
+    public void setNextInstr(String nextInstr) {
+        this.nextInstr = nextInstr;
+    }
+
+   
+    private Leader leader;
 
     /**
      * Get the value of leader

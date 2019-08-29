@@ -33,11 +33,21 @@ public class Coordinates implements Serializable {
     }
     
     public double distanceToInM(Coordinates coord) {
-        return LatLngTool.distance(toLatLng(), coord.toLatLng(), LengthUnit.METER);
+        if (coord==null) return Double.MAX_VALUE;
+        double dist = LatLngTool.distance(toLatLng(), coord.toLatLng(), LengthUnit.METER);
+        
+        System.out.println("Distance " + toString() + " to " + coord.toString() + ": " + dist);
+        
+        return dist;
     }
     
     public String toHereFormat() {
         return lat + "," + lng;
+    }
+
+    @Override
+    public String toString() {
+        return "Coordinates{" + "lat=" + lat + ", lng=" + lng + '}';
     }
     
         private double lat;

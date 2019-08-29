@@ -1,13 +1,23 @@
 /* global currentCoords */
 
 var isDebug = getURLParam("isDebug");
-var baseUrl = window.location.protocol + "//" + window.location.host + "/ChainRide/ws/";
+var isLocal = getURLParam("isLocal");
+var additionalContextPath = isLocal ? "/ChainRide" : ""
+var baseUrl = window.location.protocol + "//" + window.location.host + additionalContextPath + "/ws/";
 
 function initComm() {
     $(document).on("locationChanged", function() {
         console.log("Location changed");
     });
     
+    $.get(baseUrl + 'sessions/config', function(data) {
+        console.log(data);
+        
+        if (data) {
+            follower.guidanceThresholdM = data.guideThresholdM;
+        }
+    });
+
     user.init();
 }
 
@@ -119,9 +129,9 @@ var leader = {
             $(leader.followersListElementName).empty();
 
             data.forEach(function(e) {
-                var distance = getDistanceFromLatLonInKmPos(currentCoords, e.loc);
+                var distance = getDistanceFromLatLonInKmPos(currentCoords, e.loc) * 1000;
                 
-                var listItem = "<li>Follower&nbsp;" + e.id + ", Distance: " + distance + " m</li>";
+                var listItem = "<li>Follower&nbsp;" + e.id + ", Distance: " + distance.toFixed(0) + " m</li>";
                 $(leader.followersListElementName).append(listItem);
             });
             
@@ -138,6 +148,8 @@ var follower = {
     followIntervalMs: leader.updateIntervalMs,        // use the same
     leaderDistanceElementName: "#distanceToLeader",
     tbtElementName: "#tbtList",
+    nextInstrElementName: "#nextInstr",
+    guidanceThresholdM: 500,
     
     setFollowEnabled: function(enable) {
         this.followEnabled = enable;
@@ -156,16 +168,30 @@ var follower = {
             console.log(data);
             
             if (data.leader) {
-                var dist = (getDistanceFromLatLonInKmPos(leader.loc, currentCoords) / 1000).toFixed(0);
+                var dist = (getDistanceFromLatLonInKmPos(data.leader.loc, currentCoords) * 1000).toFixed(0);
                 $(follower.leaderDistanceElementName).html(dist + " m");
             }
             
-            $(follower.tbtElementName).empty();
+            if (data.maneuvers.length>0) {
+                $(follower.nextInstrElementName).html(data.nextInstr);
+                $(follower.tbtElementName).empty();
+                
+                var currentDist = 0;
 
-            data.maneuvers.forEach(function(e) {
-                var listItem = "<li>" + e.m + " in " + e.d + " m</li>";
-                $(follower.tbtElementName).append(listItem);
-            });
+                data.maneuvers.forEach(function(e) {
+                    var listItem = "<li>" + follower.replaceIcon(e.m) + " in " + (currentDist + e.d) + " m</li>";
+                    $(follower.tbtElementName).append(listItem);
+                    currentDist+=e.d;
+                });
+                
+            } else if (getDistanceFromLatLonInKmPos(data.leader.loc, currentCoords) * 1000 < follower.guidanceThresholdM) {        //@see SessionsResource.GUIDANCE_THRESHOLD_M
+                $(follower.tbtElementName).empty();
+                $(follower.nextInstrElementName).html("");
+            }
         });
+    },
+    
+    replaceIcon: function(maneuverStr) {
+        return "<img src='images/icons/" + maneuverStr + ".png'>";
     }
 };

@@ -12,8 +12,22 @@ package com.luxoft.chainride.model;
 public class Maneuver {
     
     public enum ManeuverType {
-        LEFT,
-        RIGHT
+        UNKNOWN,
+        STRAIGHT,
+        DEPART,
+        ARRIVE,
+        TURN_LEFT,
+        TURN_RIGHT,
+        EXIT_LEFT,
+        EXIT_RIGHT,
+        RAMP_LEFT,
+        RAMP_RIGHT,
+        FORK_LEFT,
+        FORK_RIGHT,
+        RAB_1,
+        RAB_2,
+        RAB_3,
+        RAB_4
     }
 
     public Maneuver() {
@@ -23,6 +37,13 @@ public class Maneuver {
         this.m = m;
         this.d = d;
     }
+
+    @Override
+    public String toString() {
+        return "Maneuver{" + "m=" + m + ", d=" + d + '}';
+    }
+    
+    
     
     private ManeuverType m;
 

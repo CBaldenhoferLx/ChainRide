@@ -3,15 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/LocationResource.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/HereMapsConnector.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/web/js/location.js</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/model/Coordinates.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/model/Maneuver.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/SessionsResource.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/web/js/comm.js</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/src/java/com/luxoft/chainride/model/Guidance.java</file>
-            <file>file:/C:/Projects/ChainRide/Backend2/ChainRide/web/index.html</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/src/java/com/luxoft/chainride/SessionsResource.java</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/src/java/com/luxoft/chainride/model/Guidance.java</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/web/index.html</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/src/java/com/luxoft/chainride/SessionManager.java</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/web/js/location.js</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/src/java/com/luxoft/chainride/model/Coordinates.java</file>
+            <file>file:/C:/Projects/ChainRide/ChainRide/ChainRide/web/js/comm.js</file>
         </group>
     </open-files>
 </project-private>
